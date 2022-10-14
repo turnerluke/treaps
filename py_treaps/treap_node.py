@@ -56,3 +56,9 @@ class TreapNode:
             random.shuffle(TreapNode.unused_priorities)
         return TreapNode.unused_priorities.pop()
 
+    def set_priority_to_max(self):
+        self.priority = TreapNode.MAX_PRIORITY
+
+    def is_leaf(self):
+
+        return (self.left_child is None) and (self.right_child is None)

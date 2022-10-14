@@ -140,3 +140,4 @@ def test_bst_property_simple_starter() -> None:
         if root_node.key != "9":
             assert root_node.key <= root_node.right_child.key
 
+#TODO: Test join
