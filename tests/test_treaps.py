@@ -29,6 +29,18 @@ def test_single_insert_starter() -> None:
     assert treap.lookup("one") == "one"
 
 
+def test_double_insert_starter() -> None:
+    """
+    Tests slightly greater insert/lookup functionality.
+    Added because the second insert was fdiling.
+    """
+    treap: TreapMap[str, str] = TreapMap()
+    treap.insert("one", "one")
+    assert treap.lookup("one") == "one"
+    treap.insert("two", "two")
+    assert treap.lookup("two") == "two"
+
+
 def test_multiple_insert_starter() -> None:
     """Test the insertion and lookup of multiple elements."""
 

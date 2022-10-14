@@ -20,17 +20,29 @@ class TreapMap(Treap[KT, VT]):
     def get_root_node(self) -> Optional[TreapNode]:
         return self.root
 
+    def lookup_helper(self, key: KT, node: TreapNode) -> Optional[VT]:
+        if node is None:
+            return None
+        if node.key == key:
+            return node.value
+
+        if key > node.key:
+            return self.lookup_helper(key, node.right_child)
+        if key < node.key:
+            return self.lookup_helper(key, node.left_child)
+
     def lookup(self, key: KT) -> Optional[VT]:
-        x = self.root
+        return self.lookup_helper(key, self.root)
+        '''x = self.root
         # Traverse BST
         while x is not None:
+            if x.key == key:
+                return x.value
             if x.key > key:
                 x = x.left_child
             elif x.key < key:
                 x = x.right_child
-            elif x.key == key:
-                return x.value
-        return None
+        return None'''
 
     def insert(self, key: KT, value: VT) -> None:
         if self.root is None:
@@ -50,6 +62,7 @@ class TreapMap(Treap[KT, VT]):
                         new = TreapNode(key, value, x)
                         x.right_child = new
                         break
+                    x = x.right_child
                 else:
                     if x.key == key:
                         raise ValueError(f"Key:{key} already in TreapMap")
@@ -61,28 +74,42 @@ class TreapMap(Treap[KT, VT]):
 
     def rebalance_heap(self, child, parent):
         grandparent = parent.parent
-        parent_type_of_child = 'L' if parent == grandparent.left_child else 'R'
 
-        if child == parent.left_child:  # Rotate around parent to the right
-            parent.left_child = child.right_child
-            child.right_child = parent
-            parent.parent = child
+        if grandparent is None:  # The parent is the root
+            if child == parent.left_child:  # Rotate around parent to the right
+                parent.left_child = child.right_child
+                child.right_child = parent
+                parent.parent = child
+                self.root = child
 
-        elif child == parent.right_child:  # Rotate around parent to the left
-            parent.right_child = child.left_child
-            child.left_child = parent
-            parent.parent = child
+            elif child == parent.right_child:  # Rotate around parent to the left
+                parent.right_child = child.left_child
+                child.left_child = parent
+                parent.parent = child
+                self.root = child
+        else:
+            parent_type_of_child = 'L' if parent == grandparent.left_child else 'R'
 
-        if parent_type_of_child == 'L':
-            grandparent.left_child = child
-        elif parent_type_of_child == 'R':
-            grandparent.right_child = child
-        child.parent = grandparent
+            if child == parent.left_child:  # Rotate around parent to the right
+                parent.left_child = child.right_child
+                child.right_child = parent
+                parent.parent = child
 
-        # Check for new imbalances (first child had too large priority, check if this is still the case
-        # btw child & it's new parent
-        if child.priority > grandparent.priority:
-            self.rebalance_heap(child, grandparent)
+            elif child == parent.right_child:  # Rotate around parent to the left
+                parent.right_child = child.left_child
+                child.left_child = parent
+                parent.parent = child
+
+            if parent_type_of_child == 'L':
+                grandparent.left_child = child
+            elif parent_type_of_child == 'R':
+                grandparent.right_child = child
+            child.parent = grandparent
+
+            # Check for new imbalances (first child had too large priority, check if this is still the case
+            # btw child & it's new parent
+            if child.priority > grandparent.priority:
+                self.rebalance_heap(child, grandparent)
 
     def remove(self, key: KT) -> Optional[VT]:
         x = self.root
