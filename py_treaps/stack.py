@@ -29,4 +29,4 @@ class Stack:
 
         ret = self.head.next
         self.head.next = self.head.next.next
-        return ret.
+        return ret

@@ -14,7 +14,8 @@ class TreapMap(Treap[KT, VT]):
     # Add an __init__ if you want. Make the parameters optional, though.
     def __init__(self, root: TreapNode = None):
         self.root = root
-        self.root.parent = None
+        if self.root is not None:
+            self.root.parent = None
 
     def get_root_node(self) -> Optional[TreapNode]:
         return self.root
@@ -29,7 +30,7 @@ class TreapMap(Treap[KT, VT]):
                 x = x.right_child
             elif x.key == key:
                 return x.value
-        raise ValueError(f"Key: {key} is not contained in this TreapMap.")
+        return None
 
     def insert(self, key: KT, value: VT) -> None:
         if self.root is None:
