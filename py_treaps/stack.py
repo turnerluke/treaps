@@ -27,6 +27,6 @@ class Stack:
         if self.is_empty():
             raise Exception("Pop from empty stack.")
 
-        ret = self.head.next
+        ret = self.head.next.val
         self.head.next = self.head.next.next
         return ret

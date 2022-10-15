@@ -25,8 +25,9 @@ class TreapMap(Treap[KT, VT]):
     def get_num_elements(self):
         return self.num_nodes
 
+    # TODO: Delete these helper methods once comfortable.
+    '''
     def lookup_helper(self, key: KT, node: TreapNode) -> Optional[VT]:
-
         if node is None:
             return None
         if node.key == key:
@@ -34,10 +35,26 @@ class TreapMap(Treap[KT, VT]):
         if key > node.key:
             return self.lookup_helper(key, node.right_child)
         if key < node.key:
-            return self.lookup_helper(key, node.left_child)
+            return self.lookup_helper(key, node.left_child)'''
 
     def lookup(self, key: KT) -> Optional[VT]:
-        return self.lookup_helper(key, self.root)
+        """
+        Returns the value for the given key.
+
+        Helper is utilized to ensure the inputs are the same as provided for testing.
+        """
+
+        def helper(node: TreapNode) -> Optional[VT]:
+            if node is None:
+                return None
+            if node.key == key:
+                return node.value
+            if key > node.key:
+                return helper(node.right_child)
+            if key < node.key:
+                return helper(node.left_child)
+
+        return helper(self.root)
 
     def insert(self, key: KT, value: VT) -> None:
         self.num_nodes += 1
@@ -67,7 +84,6 @@ class TreapMap(Treap[KT, VT]):
             if new.priority > x.priority:  # The heap is imbalanced
                 self.rebalance_heap(new)
 
-
     def left_rotate(self, node):
         """
         Helper for re-balancing. Performs a left rotation around node.
@@ -96,7 +112,7 @@ class TreapMap(Treap[KT, VT]):
 
     def right_rotate(self, node):
         """
-        Helper for rebalancing. Performs a left rotation around node.
+        Helper for re-balancing. Performs a left rotation around node.
         """
         # Get relational nodes
         child = node.left_child
@@ -119,75 +135,6 @@ class TreapMap(Treap[KT, VT]):
         elif grandparent is None:
             self.root = child
             child.parent = None
-
-        ''' These were the first rotate functions, with superfluous code. Remove once confident in the new ones.
-        def left_rotate(self, node):
-            """
-            Helper for re-balancing. Performs a left rotation around node.
-            """
-            # Get relational nodes
-            child = node.right_child
-            grandparent = node.parent
-            if grandparent is not None:
-                node_child_type = 'L' if node.is_left_child() else 'R'
-
-                node.right_child = child.left_child
-                node.correct_children()
-                # if node.right_child is not None: node.right_child.parent = node
-                child.left_child = node
-                node.parent = child
-
-                if node_child_type == 'L':
-                    grandparent.left_child = child
-                elif node_child_type == 'R':
-                    grandparent.right_child = child
-                child.parent = grandparent
-
-            elif grandparent is None:
-                node.right_child = child.left_child
-                node.correct_children()
-                # if node.right_child is not None: node.right_child.parent = node
-
-                child.left_child = node
-                node.parent = child
-                self.root = child
-                child.parent = None
-                
-        def right_rotate(self, node):
-            """
-            Helper for rebalancing. Performs a left rotation around node.
-            """
-            # Get relational nodes
-            child = node.left_child
-            grandparent = node.parent
-            if grandparent is not None:
-                node_child_type = 'L' if node.is_left_child() else 'R'
-    
-                node.left_child = child.right_child
-                node.correct_children()
-                #if node.left_child is not None: node.left_child.parent = node
-    
-                child.right_child = node
-                node.parent = child
-    
-                if node_child_type == 'L':
-                    grandparent.left_child = child
-                elif node_child_type == 'R':
-                    grandparent.right_child = child
-                child.parent = grandparent
-    
-            elif grandparent is None:
-                node.left_child = child.right_child
-                node.correct_children()
-                #if node.left_child is not None: node.left_child.parent = node
-    
-                child.right_child = node
-                node.parent = child
-                self.root = child
-                child.parent = None            
-                '''
-
-
 
     def rebalance_heap(self, child):
         grandparent = child.parent.parent
@@ -273,6 +220,12 @@ class TreapMap(Treap[KT, VT]):
             self.rebalance_heap(new)
 
     def split(self, threshold: KT) -> List[Treap[KT, VT]]:
+        """
+        Splits the Treap into 2, one with keys less than, the other with keys greater than or equal to the threshold.
+        Performed by inserting a new node with key threshold and priority MAXPRIORITY.
+        The left subtree is the lesser keys, the right subtree is the greater/equal to keys.
+
+        """
         # 1) Insert new entry x with key threshold, and priority = MAXPRIORITY
         self.insert_with_max_priority(threshold)
         # 2) T1 is the left subtree, T2 is the right
@@ -281,87 +234,83 @@ class TreapMap(Treap[KT, VT]):
         return [T1, T2]
 
     def join(self, _other: Treap[KT, VT]) -> None:
-        '''
+        """
+        Joins another Treap to this Treap.
         Note it's assumed that all keys in T1 are smaller than keys in T2.
 
-        '''
+        """
         # Create new TreapMap with arbitrary root, x
-        T = TreapMap(TreapNode(0, 0))
+        T = TreapMap(TreapNode(0, None))
         # Make T1 & T2 the subtreaps
         T1, T2 = (self, _other) if self.root.key < _other.root.key else (_other, self)
         T.root.left_child = T1.root
-        T1.root.parent = T.root
-        T.root.right_child = T2
-        T2.root.parent = T.root
+        T.root.right_child = T2.root
+        T.root.correct_children()
         self.root = T.root
         # Delete x
         self.remove(0)
 
-    def meld(self, other: Treap[KT, VT]) -> None: # KARMA
+    def meld(self, other: Treap[KT, VT]) -> None:
+        """
+        Merges two Treaps. Does not assume any relationship between keys.
+
+        Must run in O(m log(n/m)). n, m are the Treap sizes. (m<n)
+        """
         raise AttributeError
 
     def difference(self, other: Treap[KT, VT]) -> None: # KARMA
         raise AttributeError
 
-    def balance_factor(self) -> float: # KARMA
+    def balance_factor(self) -> float:
+        """
+        Ratio between the height and the minimum possible height.
+        """
+        n = len(iter(self))
+        #
         raise AttributeError
 
-    def str_helper(self, node: TreapNode, level: int = 0, type: str='Root'):
+    '''
+    defining these helpers as methods is cluttering.
+    def str_helper(self, node: TreapNode, level: int = 0, node_type: str = 'Root'):
         if node is None:
             return
-        yield node, level, type
+        yield node, level, node_type
         yield from self.str_helper(node.left_child, level + 1, 'L')
-        yield from self.str_helper(node.right_child, level + 1, 'R')
+        yield from self.str_helper(node.right_child, level + 1, 'R')'''
 
     def __str__(self) -> str:
-        nodes = self.str_helper(self.root)
+
+        def helper(node: TreapNode, level: int = 0, node_type: str = 'Root'):
+            if node is None:
+                return
+            yield node, level, node_type
+            yield from helper(node.left_child, level + 1, 'L')
+            yield from helper(node.right_child, level + 1, 'R')
+
+        #nodes = self.str_helper(self.root)
+        nodes = helper(self.root)
         lines = []
         for node, lvl, type in nodes:
             lines.append('\t'*lvl + f'{type}: {(node.key, node.priority)}')
 
         return '\n'.join(lines)
 
-        '''lines = []
-        stack = Stack()
-        # Stack elements will be (node, level)
-        stack.push((self.root, 0))
-
-        lines += [f'Root: {(self.root.key, self.root.value)}']
-        
-        while stack:
-            current, lvl = stack.pop()
-            L = current.left_child
-            R = current.right_child
-            if L is not None:
-                lines += [lvl+1*'\t' + f'L: {(L.key, L.value)}']
-            if R is not None:
-                lines += [lvl + 1 * '\t' + f'R: {(R.key, R.value)}']
-            lines += [lvl*'\t' + f'{(x.key, x.value)}']
-            for x in zip([x.left_child, x.right_child]'''
-
+    '''
     def iter_helper(self, node):
         if node is None:
             return
         yield from self.iter_helper(node.left_child)
         yield node.key
         yield from self.iter_helper(node.right_child)
+        '''
 
     def __iter__(self) -> typing.Iterator[KT]:
+        def helper(node):
+            if node is None:
+                return
+            yield from helper(node.left_child)
+            yield node.key
+            yield from helper(node.right_child)
+
         x = self.root
-        yield from self.iter_helper(x)
-
-        '''
-        # TODO: Fix, this only yields leafs
-        stack = Stack()
-        stack.push(self.root)
-
-        while stack:
-            prev_node = stack.pop()
-
-            if prev_node.is_leaf():
-                yield prev_node.key
-
-            if prev_node.right_child is not None:
-                stack.push(prev_node.right_child)
-            if prev_node.left_child is not None:
-                stack.push(prev_node.left_child)'''
+        yield from helper(x)

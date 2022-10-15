@@ -1,4 +1,5 @@
 from py_treaps.treap_map import TreapMap
+from py_treaps.stack import Stack
 
 import pytest
 from typing import Any
@@ -45,9 +46,6 @@ def test_multiple_insert_starter() -> None:
 
     for i in range(N):
         treap.insert(i, str(i))
-        print(f"\n------------------")
-        print(f"Number of elements: {treap.get_num_elements()}")
-        print(treap)
         assert treap.lookup(i) == str(i)
 
     # make sure all nodes are still there
@@ -114,8 +112,6 @@ def test_remove() -> None:
     assert treap.remove(5) == 'ABC'
     assert treap.remove(5) is None
 
-# TODO: Real removal testing
-
 
 def test_iterator_exception_starter() -> None:
     """Test that the TreapMap iterator raises a StopIteration
@@ -172,7 +168,7 @@ def test_get_root_node_starter() -> None:
     assert root_node.parent is None
     assert root_node.left_child is not None or root_node.right_child is not None
 
-# TODO: Return and make better
+
 def test_heap_property_simple_starter() -> None:
     """
     Test heap property in a basic way
@@ -182,16 +178,17 @@ def test_heap_property_simple_starter() -> None:
         t = TreapMap()
         for i in range(10):
             t.insert(str(i), str(i))
-        root_node = t.get_root_node()
-
-        # Is this sufficient to test the heap property?
-
-        if (
-            root_node.key != "0"
-        ):  # why does this if statement exist? What if you remove it?
-            assert root_node.priority >= root_node.left_child.priority
-        if root_node.key != "9":
-            assert root_node.priority >= root_node.right_child.priority
+        root = t.get_root_node()
+        stack = Stack()
+        stack.push(root)
+        while stack:
+            x = stack.pop()
+            if x.has_right_child():
+                assert x.priority >= x.right_child.priority
+                stack.push(x.right_child)
+            if x.has_left_child():
+                assert x.priority >= x.left_child.priority
+                stack.push(x.left_child)
 
 
 def test_bst_property_simple_starter() -> None:
@@ -203,13 +200,47 @@ def test_bst_property_simple_starter() -> None:
         t = TreapMap()
         for i in range(10):
             t.insert(str(i), str(i))
-        root_node = t.get_root_node()
+        root = t.get_root_node()
+        stack = Stack()
+        stack.push(root)
+        while stack:
+            x = stack.pop()
+            if x.has_right_child():
+                assert x.key <= x.right_child.key
+                stack.push(x.right_child)
+            if x.has_left_child():
+                assert x.key >= x.left_child.key
+                stack.push(x.left_child)
 
-        # Is this sufficient to test the BST property?
 
-        if root_node.key != "0":
-            assert root_node.key >= root_node.left_child.key
-        if root_node.key != "9":
-            assert root_node.key <= root_node.right_child.key
+# TODO: See if priorities can match
+def test_join() -> None:
+    t = TreapMap()
+    t2 = TreapMap()
 
-#TODO: Test join
+    for i in range(10):
+        t.insert(i, str(i))
+    for i in range(10, 20):
+        t2.insert(i, str(i))
+
+    t.join(t2)
+    for i in range(20):
+        assert i in t
+        assert t.lookup(i) == str(i)
+
+
+def test_iterator_independence() -> None:
+    for _ in range(50):  # Run this test a bunch to account for randomness
+        t = TreapMap()
+        for i in range(10):
+            t.insert(str(i), str(i))
+
+    it1 = iter(t)
+    it2 = iter(t)
+
+    assert next(it1) == next(it2)
+    assert next(it1) == next(it2)
+    assert next(it1) == next(it2)
+    next(it1)
+    assert next(it1) != next(it2)
+    assert next(it1) != next(it2)
