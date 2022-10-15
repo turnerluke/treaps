@@ -2,8 +2,9 @@
 treaps-turnerluke created by GitHub Classroom
 
 TODO:
--First draft
--Test
--Draft testcases
+-~~First draft~~  
+-Test  
+-Draft testcases  
+-Karma
 
 
