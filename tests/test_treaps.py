@@ -3,15 +3,11 @@ from py_treaps.treap_map import TreapMap
 import pytest
 from typing import Any
 
-# This file includes some starter test cases that you can use
-# as a template to test your code and write your own test cases.
-# You should write more tests; passing the following tests is
-# NOT sufficient to guarantee that your code works.
-# For example, there is no test for join(). You should write some.
-# Be sure to read the test cases carefully.
 
 def test_empty_lookup_starter() -> None:
-    """Test `lookup` on an empty Treap."""
+    """
+    Test `lookup` on an empty Treap.
+    """
 
     treap: TreapMap[Any, Any] = TreapMap()
 
@@ -40,7 +36,7 @@ def test_double_insert_starter() -> None:
     treap.insert("two", "two")
     assert treap.lookup("two") == "two"
 
-
+# TODO: Fix, sometimes fails
 def test_multiple_insert_starter() -> None:
     """Test the insertion and lookup of multiple elements."""
 
@@ -49,6 +45,8 @@ def test_multiple_insert_starter() -> None:
 
     for i in range(N):
         treap.insert(i, str(i))
+        print(f"Number of elements: {treap.get_num_elements()}")
+        print(treap)
         assert treap.lookup(i) == str(i)
 
     # make sure all nodes are still there

@@ -14,24 +14,38 @@ class TreapMap(Treap[KT, VT]):
     # Add an __init__ if you want. Make the parameters optional, though.
     def __init__(self, root: TreapNode = None):
         self.root = root
+        self.num_nodes = 0
         if self.root is not None:
             self.root.parent = None
+            self.num_nodes += 1
 
     def get_root_node(self) -> Optional[TreapNode]:
         return self.root
 
+    def get_num_elements(self):
+        return self.num_nodes
+
     def lookup_helper(self, key: KT, node: TreapNode) -> Optional[VT]:
+
         if node is None:
+            print("Dead End")
             return None
         if node.key == key:
+            print(f"Found key: {key}")
             return node.value
+        print(f'Current node: {node.key}')
 
         if key > node.key:
+            print("Moving Right")
             return self.lookup_helper(key, node.right_child)
         if key < node.key:
+            print("Moving Left")
             return self.lookup_helper(key, node.left_child)
 
     def lookup(self, key: KT) -> Optional[VT]:
+
+        print(f"\nLookup start for key: {key}")
+        print(self)
         return self.lookup_helper(key, self.root)
         '''x = self.root
         # Traverse BST
@@ -45,6 +59,7 @@ class TreapMap(Treap[KT, VT]):
         return None'''
 
     def insert(self, key: KT, value: VT) -> None:
+        self.num_nodes += 1
         if self.root is None:
             self.root = TreapNode(key, value)
         else:
@@ -76,26 +91,30 @@ class TreapMap(Treap[KT, VT]):
         grandparent = parent.parent
 
         if grandparent is None:  # The parent is the root
-            if child == parent.left_child:  # Rotate around parent to the right
+            if child.is_left_child():  # Rotate around parent to the right
                 parent.left_child = child.right_child
+                if child.right_child is not None:
+                    child.right_child.parent = parent
                 child.right_child = parent
                 parent.parent = child
                 self.root = child
 
-            elif child == parent.right_child:  # Rotate around parent to the left
+            elif child.is_right_child():  # Rotate around parent to the left
                 parent.right_child = child.left_child
+                if child.left_child is not None:
+                    child.left_child.parent = parent
                 child.left_child = parent
                 parent.parent = child
                 self.root = child
         else:
-            parent_type_of_child = 'L' if parent == grandparent.left_child else 'R'
+            parent_type_of_child = 'L' if parent.is_left_child() else 'R'
 
-            if child == parent.left_child:  # Rotate around parent to the right
+            if child.is_left_child():  # Rotate around parent to the right
                 parent.left_child = child.right_child
                 child.right_child = parent
                 parent.parent = child
 
-            elif child == parent.right_child:  # Rotate around parent to the left
+            elif child.is_right_child():  # Rotate around parent to the left
                 parent.right_child = child.left_child
                 child.left_child = parent
                 parent.parent = child
@@ -129,7 +148,7 @@ class TreapMap(Treap[KT, VT]):
         type_of_child = 'L' if x.parent.left_child == x else 'R'
 
         # x is now the node to be removed
-        # The child taking it's place should have the largest priority
+        # The child taking its place should have the largest priority
 
         if x.left_child.priority > x.right_child.priority:
             new_x = x.left_child
@@ -231,18 +250,18 @@ class TreapMap(Treap[KT, VT]):
     def balance_factor(self) -> float: # KARMA
         raise AttributeError
 
-    def str_helper(self, node: TreapNode, level: int = 0, type: str=''):
+    def str_helper(self, node: TreapNode, level: int = 0, type: str='Root'):
         if node is None:
             return
         yield node, level, type
         yield from self.str_helper(node.left_child, level + 1, 'L')
-        yield from self.str_helper(node.left_child, level + 1, 'L')
+        yield from self.str_helper(node.right_child, level + 1, 'R')
 
     def __str__(self) -> str:
         nodes = self.str_helper(self.root)
         lines = []
         for node, lvl, type in nodes:
-            lines.append('\t'*lvl + f'{type}: {(node.key, node.value)}')
+            lines.append('\t'*lvl + f'{type}: {(node.key, node.priority)}')
 
         return '\n'.join(lines)
 

@@ -60,5 +60,15 @@ class TreapNode:
         self.priority = TreapNode.MAX_PRIORITY
 
     def is_leaf(self):
-
         return (self.left_child is None) and (self.right_child is None)
+
+    def is_left_child(self):
+        if self.parent is not None:
+            if self.parent.left_child == self:
+                return True
+            else:
+                return False
+        raise ValueError("Node being checked for child type has no parent node.")
+
+    def is_right_child(self):
+        return not self.is_left_child()
