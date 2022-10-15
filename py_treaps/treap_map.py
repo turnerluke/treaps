@@ -28,35 +28,16 @@ class TreapMap(Treap[KT, VT]):
     def lookup_helper(self, key: KT, node: TreapNode) -> Optional[VT]:
 
         if node is None:
-            print("Dead End")
             return None
         if node.key == key:
-            print(f"Found key: {key}")
             return node.value
-        print(f'Current node: {node.key}')
-
         if key > node.key:
-            print("Moving Right")
             return self.lookup_helper(key, node.right_child)
         if key < node.key:
-            print("Moving Left")
             return self.lookup_helper(key, node.left_child)
 
     def lookup(self, key: KT) -> Optional[VT]:
-
-        print(f"\nLookup start for key: {key}")
-        print(self)
         return self.lookup_helper(key, self.root)
-        '''x = self.root
-        # Traverse BST
-        while x is not None:
-            if x.key == key:
-                return x.value
-            if x.key > key:
-                x = x.left_child
-            elif x.key < key:
-                x = x.right_child
-        return None'''
 
     def insert(self, key: KT, value: VT) -> None:
         self.num_nodes += 1
@@ -78,151 +59,162 @@ class TreapMap(Treap[KT, VT]):
                         x.right_child = new
                         break
                     x = x.right_child
-                else:
-                    if x.key == key:
-                        raise ValueError(f"Key:{key} already in TreapMap")
-                    raise ValueError(f"Cannot add key:{key} to TreapMap")
+                elif x.key == key:
+                    x.value = value
+                    return
 
             # Rebalance maxheap
             if new.priority > x.priority:  # The heap is imbalanced
-                self.rebalance_heap(new, x)
+                self.rebalance_heap(new)
 
-    def rebalance_heap(self, child, parent):
-        grandparent = parent.parent
+#TODO: Clean up rotations
+    # Fix child relationship method for nodes (checks for children and assigns their parents to the original parent)
+    # Figure out how to not reuse code
+    def left_rotate(self, node):
+        """
+        Helper for re-balancing. Performs a left rotation around node.
+        """
+        # Get relational nodes
+        child = node.right_child
+        grandparent = node.parent
+        if grandparent is not None:
+            node_child_type = 'L' if node.is_left_child() else 'R'
 
-        if grandparent is None:  # The parent is the root
-            if child.is_left_child():  # Rotate around parent to the right
-                parent.left_child = child.right_child
-                if child.right_child is not None:
-                    child.right_child.parent = parent
-                child.right_child = parent
-                parent.parent = child
-                self.root = child
+            node.right_child = child.left_child
+            if node.right_child is not None: node.right_child.parent = node
+            child.left_child = node
+            node.parent = child
 
-            elif child.is_right_child():  # Rotate around parent to the left
-                parent.right_child = child.left_child
-                if child.left_child is not None:
-                    child.left_child.parent = parent
-                child.left_child = parent
-                parent.parent = child
-                self.root = child
-        else:
-            parent_type_of_child = 'L' if parent.is_left_child() else 'R'
-
-            if child.is_left_child():  # Rotate around parent to the right
-                parent.left_child = child.right_child
-                child.right_child = parent
-                parent.parent = child
-
-            elif child.is_right_child():  # Rotate around parent to the left
-                parent.right_child = child.left_child
-                child.left_child = parent
-                parent.parent = child
-
-            if parent_type_of_child == 'L':
+            if node_child_type == 'L':
                 grandparent.left_child = child
-            elif parent_type_of_child == 'R':
+            elif node_child_type == 'R':
                 grandparent.right_child = child
             child.parent = grandparent
 
-            # Check for new imbalances (first child had too large priority, check if this is still the case
-            # btw child & it's new parent
+        elif grandparent is None:
+            node.right_child = child.left_child
+            if node.right_child is not None: node.right_child.parent = node
+
+            child.left_child = node
+            node.parent = child
+            self.root = child
+            child.parent = None
+
+    def right_rotate(self, node):
+        """
+        Helper for rebalancing. Performs a left rotation around node.
+        """
+        # Get relational nodes
+        child = node.left_child
+        grandparent = node.parent
+        if grandparent is not None:
+            node_child_type = 'L' if node.is_left_child() else 'R'
+
+            node.left_child = child.right_child
+            if node.left_child is not None: node.left_child.parent = node  # ***
+
+            child.right_child = node
+            node.parent = child
+
+            if node_child_type == 'L':
+                grandparent.left_child = child
+            elif node_child_type == 'R':
+                grandparent.right_child = child
+            child.parent = grandparent
+
+        elif grandparent is None:
+            node.left_child = child.right_child
+            if node.left_child is not None: node.left_child.parent = node  # ***
+
+            child.right_child = node
+            node.parent = child
+            self.root = child
+            child.parent = None
+
+    def rebalance_heap(self, child):
+        grandparent = child.parent.parent
+        if child.is_left_child():
+            self.right_rotate(child.parent)
+        elif child.is_right_child():
+            self.left_rotate(child.parent)
+
+        # Check for new imbalances (first child had too large priority, check if this is still the case
+        # btw child & it's new parent
+        if grandparent is not None:
             if child.priority > grandparent.priority:
-                self.rebalance_heap(child, grandparent)
+                self.rebalance_heap(child)
 
     def remove(self, key: KT) -> Optional[VT]:
+        """
+        Removes the node with this key from the tree. Returns the value for that node. Returns None if not present.
+        """
         x = self.root
 
         while True:
             if x is None:
-                raise ValueError(f"Key: {key} is not in the TreapMap.")
+                return None
             if key > x.key:
                 x = x.right_child
             elif key < x.key:
                 x = x.left_child
             elif key == x.key:
+                victim = x
+                val = victim.value
                 break
             else:
                 raise ValueError
 
-        type_of_child = 'L' if x.parent.left_child == x else 'R'
-
-        # x is now the node to be removed
+        # victim is now the node to be removed
         # The child taking its place should have the largest priority
+        # We rotate the highest priority child to the victims spot
 
-        if x.left_child.priority > x.right_child.priority:
-            new_x = x.left_child
-        else:
-            new_x = x.right_child
+        while victim.right_child is not None and victim.left_child is not None:
+            if victim.right_child is None or victim.left_child.priority > victim.right_child.priority:
+                self.right_rotate(victim)
+            elif victim.left_child is None or victim.right_child.priority > victim.left_child.priority:
+                self.left_rotate(victim)
+        # Victim is now a leaf
+        if victim.is_left_child():
+            victim.parent.left_child = None
+        elif victim.is_right_child():
+            victim.parent.right_child = None
 
-        if type_of_child == 'L':
-            x.parent.left_child = new_x
-            new_x.parent = x.parent
-        else:
-            x.parent.right_child = new_x
-            new_x.parent = x.parent
+        return val
 
-        # TODO: Fix
-        # Maybe use join to add new tree after creating orphan
-
-    def split(self, threshold: KT) -> List[Treap[KT, VT]]:
-
+    def insert_with_max_priority(self, key: KT) -> None:
+        """
+        Helper for `split`. Same function as insert, however sets the priority
+        of the new node to the max priority.
+        """
+        value = None
         if self.root is None:
-            return [None, None]
+            self.root = TreapNode(key, value)
         else:
             x = self.root
             # Perform the BST insertion
             while True:
-                if x.key >= threshold:  # The choice to move left when equal is arbitrary
+                if x.key >= key:
                     if x.left_child is None:
-                        new = TreapNode(threshold, None, x)
-                        new.set_priority_to_max()
+                        new = TreapNode(key, value, x)
                         x.left_child = new
                         break
                     x = x.left_child
-                elif x.key < threshold:
+                elif x.key < key:
                     if x.right_child is None:
-                        new = TreapNode(threshold, None, x)
-                        new.set_priority_to_max()
+                        new = TreapNode(key, value, x)
                         x.right_child = new
                         break
-            # Rebalance heap so that threshold node is the root
-            self.rebalance_heap(new, x)
-            L = TreapMap(self.root.left_child)
-            R = TreapMap(self.root.right_child)
-            return [L, R]
+                    x = x.right_child
+            new.set_priority_to_max()
+            self.rebalance_heap(new)
 
-
-        '''First implementation
-        # We search the tree looking for the following position:
-        # x.key > threshold and x.left_child.key < threshold
-        #   Then l_child is it's own Treap
-
-        # x.key < threshold and x.right_child.key > threshold
-        #   Then r_child is it's own Treap
-
-        root = self.root
-        x = self.root
-
-        while True:
-            if x.key > threshold:
-                l_child = x.left_child
-                if l_child.key < threshold:
-                    # Make l_child its own tree, return
-                    l_child.parent = None
-                    l_child = TreapMap(l_child)
-                    x.left_child = None
-                    return [l_child, root]
-                x = x.left_child
-            if x.key < threshold:
-                r_child = x.right_child
-                if r_child.key > threshold:
-                    # Make r_child its own tree, return
-                    r_child.parent = None
-                    r_child = TreapMap(r_child)
-                    x.right_child = None
-                    return [root, r_child]
-                x = x.right_chlid'''
+    def split(self, threshold: KT) -> List[Treap[KT, VT]]:
+        # 1) Insert new entry x with key threshold, and priority = MAXPRIORITY
+        self.insert_with_max_priority(threshold)
+        # 2) T1 is the left subtree, T2 is the right
+        T1 = TreapMap(self.root.left_child)
+        T2 = TreapMap(self.root.right_child)
+        return [T1, T2]
 
     def join(self, _other: Treap[KT, VT]) -> None:
         '''

@@ -36,7 +36,7 @@ def test_double_insert_starter() -> None:
     treap.insert("two", "two")
     assert treap.lookup("two") == "two"
 
-# TODO: Fix, sometimes fails
+
 def test_multiple_insert_starter() -> None:
     """Test the insertion and lookup of multiple elements."""
 
@@ -45,6 +45,28 @@ def test_multiple_insert_starter() -> None:
 
     for i in range(N):
         treap.insert(i, str(i))
+        print(f"\n------------------")
+        print(f"Number of elements: {treap.get_num_elements()}")
+        print(treap)
+        assert treap.lookup(i) == str(i)
+
+    # make sure all nodes are still there
+    for i in range(N):
+        assert treap.lookup(i) == str(i)
+
+def test_multiple_insert_starter_reversed() -> None:
+    """
+    Test the insertion and lookup of multiple elements.
+    Repeat of the above, except in reverse order, to ensure right rotations work
+    along with the left rotations.
+    """
+
+    treap: TreapMap[int, str] = TreapMap()
+    N = 21
+
+    for i in reversed(range(N)):
+        treap.insert(i, str(i))
+        print(f"\n------------------")
         print(f"Number of elements: {treap.get_num_elements()}")
         print(treap)
         assert treap.lookup(i) == str(i)
@@ -74,6 +96,8 @@ def test_empty_remove_starter() -> None:
     treap: TreapMap[str, int] = TreapMap()
     assert treap.remove("hi") is None
 
+# TODO: Real removal testing
+
 
 def test_iterator_exception_starter() -> None:
     """Test that the TreapMap iterator raises a StopIteration
@@ -86,15 +110,44 @@ def test_iterator_exception_starter() -> None:
         next(it)
 
 
+def test_small_split_by_median_starter() -> None:
+    """
+    Test `split` with the median key.
+    """
+
+    original_treap = TreapMap()
+    for i in range(6):
+        original_treap.insert(i, str(i))
+    print('\n')
+    print('ORIGINAL')
+    print(original_treap)
+    left, right = original_treap.split(3)
+    print("FINAL LEFT")
+    print(left)
+    print("FINAL RIGHT")
+    print(right)
+
+    for key in left:
+        assert 0 <= key < 3
+    for i in range(3, 6):
+        assert right.lookup(i) == str(i)
+
 def test_split_by_median_starter() -> None:
-    """Test `split` with the median key."""
+    """
+    Test `split` with the median key.
+    """
 
     original_treap = TreapMap()
     for i in range(11):
         original_treap.insert(i, str(i))
-    new_treaps = original_treap.split(5)
-    left = new_treaps[0]
-    right = new_treaps[1]
+    print('\n')
+    print('Original')
+    print(original_treap)
+    left, right = original_treap.split(5)
+    print("Left")
+    print(left)
+    print("Right")
+    print(right)
 
     for key in left:
         assert 0 <= key < 5
@@ -114,7 +167,7 @@ def test_get_root_node_starter() -> None:
     assert root_node.parent is None
     assert root_node.left_child is not None or root_node.right_child is not None
 
-
+# TODO: Return and make better
 def test_heap_property_simple_starter() -> None:
     """Test heap property in a basic way"""
 
