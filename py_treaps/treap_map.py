@@ -67,9 +67,7 @@ class TreapMap(Treap[KT, VT]):
             if new.priority > x.priority:  # The heap is imbalanced
                 self.rebalance_heap(new)
 
-#TODO: Clean up rotations
-    # Fix child relationship method for nodes (checks for children and assigns their parents to the original parent)
-    # Figure out how to not reuse code
+
     def left_rotate(self, node):
         """
         Helper for re-balancing. Performs a left rotation around node.
@@ -80,23 +78,19 @@ class TreapMap(Treap[KT, VT]):
         if grandparent is not None:
             node_child_type = 'L' if node.is_left_child() else 'R'
 
-            node.right_child = child.left_child
-            if node.right_child is not None: node.right_child.parent = node
-            child.left_child = node
-            node.parent = child
+        node.right_child = child.left_child
+        node.correct_children()
+        child.left_child = node
+        node.parent = child
 
+        if grandparent is not None:
             if node_child_type == 'L':
                 grandparent.left_child = child
             elif node_child_type == 'R':
                 grandparent.right_child = child
             child.parent = grandparent
 
-        elif grandparent is None:
-            node.right_child = child.left_child
-            if node.right_child is not None: node.right_child.parent = node
-
-            child.left_child = node
-            node.parent = child
+        elif grandparent is None:  # The child was rotated to the root
             self.root = child
             child.parent = None
 
@@ -110,12 +104,12 @@ class TreapMap(Treap[KT, VT]):
         if grandparent is not None:
             node_child_type = 'L' if node.is_left_child() else 'R'
 
-            node.left_child = child.right_child
-            if node.left_child is not None: node.left_child.parent = node  # ***
+        node.left_child = child.right_child
+        node.correct_children()
+        child.right_child = node
+        node.parent = child
 
-            child.right_child = node
-            node.parent = child
-
+        if grandparent is not None:
             if node_child_type == 'L':
                 grandparent.left_child = child
             elif node_child_type == 'R':
@@ -123,13 +117,77 @@ class TreapMap(Treap[KT, VT]):
             child.parent = grandparent
 
         elif grandparent is None:
-            node.left_child = child.right_child
-            if node.left_child is not None: node.left_child.parent = node  # ***
-
-            child.right_child = node
-            node.parent = child
             self.root = child
             child.parent = None
+
+        ''' These were the first rotate functions, with superfluous code. Remove once confident in the new ones.
+        def left_rotate(self, node):
+            """
+            Helper for re-balancing. Performs a left rotation around node.
+            """
+            # Get relational nodes
+            child = node.right_child
+            grandparent = node.parent
+            if grandparent is not None:
+                node_child_type = 'L' if node.is_left_child() else 'R'
+
+                node.right_child = child.left_child
+                node.correct_children()
+                # if node.right_child is not None: node.right_child.parent = node
+                child.left_child = node
+                node.parent = child
+
+                if node_child_type == 'L':
+                    grandparent.left_child = child
+                elif node_child_type == 'R':
+                    grandparent.right_child = child
+                child.parent = grandparent
+
+            elif grandparent is None:
+                node.right_child = child.left_child
+                node.correct_children()
+                # if node.right_child is not None: node.right_child.parent = node
+
+                child.left_child = node
+                node.parent = child
+                self.root = child
+                child.parent = None
+                
+        def right_rotate(self, node):
+            """
+            Helper for rebalancing. Performs a left rotation around node.
+            """
+            # Get relational nodes
+            child = node.left_child
+            grandparent = node.parent
+            if grandparent is not None:
+                node_child_type = 'L' if node.is_left_child() else 'R'
+    
+                node.left_child = child.right_child
+                node.correct_children()
+                #if node.left_child is not None: node.left_child.parent = node
+    
+                child.right_child = node
+                node.parent = child
+    
+                if node_child_type == 'L':
+                    grandparent.left_child = child
+                elif node_child_type == 'R':
+                    grandparent.right_child = child
+                child.parent = grandparent
+    
+            elif grandparent is None:
+                node.left_child = child.right_child
+                node.correct_children()
+                #if node.left_child is not None: node.left_child.parent = node
+    
+                child.right_child = node
+                node.parent = child
+                self.root = child
+                child.parent = None            
+                '''
+
+
 
     def rebalance_heap(self, child):
         grandparent = child.parent.parent
@@ -168,11 +226,17 @@ class TreapMap(Treap[KT, VT]):
         # The child taking its place should have the largest priority
         # We rotate the highest priority child to the victims spot
 
-        while victim.right_child is not None and victim.left_child is not None:
-            if victim.right_child is None or victim.left_child.priority > victim.right_child.priority:
+        while victim.has_children():
+            if not victim.has_right_child() and victim.has_left_child():
                 self.right_rotate(victim)
-            elif victim.left_child is None or victim.right_child.priority > victim.left_child.priority:
+            elif not victim.has_left_child() and victim.has_right_child():
                 self.left_rotate(victim)
+
+            elif victim.left_child.priority > victim.right_child.priority:
+                self.right_rotate(victim)
+            elif victim.right_child.priority > victim.left_child.priority:
+                self.left_rotate(victim)
+
         # Victim is now a leaf
         if victim.is_left_child():
             victim.parent.left_child = None

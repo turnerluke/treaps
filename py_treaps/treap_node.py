@@ -72,3 +72,18 @@ class TreapNode:
 
     def is_right_child(self):
         return not self.is_left_child()
+
+    def correct_children(self):
+        if self.left_child is not None:
+            self.left_child.parent = self
+        if self.right_child is not None:
+            self.right_child.parent = self
+
+    def has_left_child(self):
+        return self.left_child is not None
+
+    def has_right_child(self):
+        return self.right_child is not None
+
+    def has_children(self):
+        return self.has_left_child() or self.has_right_child()

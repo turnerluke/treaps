@@ -54,6 +54,7 @@ def test_multiple_insert_starter() -> None:
     for i in range(N):
         assert treap.lookup(i) == str(i)
 
+
 def test_multiple_insert_starter_reversed() -> None:
     """
     Test the insertion and lookup of multiple elements.
@@ -66,9 +67,6 @@ def test_multiple_insert_starter_reversed() -> None:
 
     for i in reversed(range(N)):
         treap.insert(i, str(i))
-        print(f"\n------------------")
-        print(f"Number of elements: {treap.get_num_elements()}")
-        print(treap)
         assert treap.lookup(i) == str(i)
 
     # make sure all nodes are still there
@@ -96,6 +94,26 @@ def test_empty_remove_starter() -> None:
     treap: TreapMap[str, int] = TreapMap()
     assert treap.remove("hi") is None
 
+
+def test_remove() -> None:
+    """
+    Test a wide range of functionality of `remove`.
+    """
+
+    treap: TreapMap[int, int] = TreapMap()
+    assert treap.remove(1) is None
+
+    for i in range(6):
+        treap.insert(i, i)
+
+    assert treap.remove(3) == 3
+    assert treap.remove(3) is None
+
+    assert treap.remove(4) == 4
+    treap.insert(5, 'ABC')
+    assert treap.remove(5) == 'ABC'
+    assert treap.remove(5) is None
+
 # TODO: Real removal testing
 
 
@@ -118,19 +136,13 @@ def test_small_split_by_median_starter() -> None:
     original_treap = TreapMap()
     for i in range(6):
         original_treap.insert(i, str(i))
-    print('\n')
-    print('ORIGINAL')
-    print(original_treap)
     left, right = original_treap.split(3)
-    print("FINAL LEFT")
-    print(left)
-    print("FINAL RIGHT")
-    print(right)
 
     for key in left:
         assert 0 <= key < 3
     for i in range(3, 6):
         assert right.lookup(i) == str(i)
+
 
 def test_split_by_median_starter() -> None:
     """
@@ -140,14 +152,7 @@ def test_split_by_median_starter() -> None:
     original_treap = TreapMap()
     for i in range(11):
         original_treap.insert(i, str(i))
-    print('\n')
-    print('Original')
-    print(original_treap)
     left, right = original_treap.split(5)
-    print("Left")
-    print(left)
-    print("Right")
-    print(right)
 
     for key in left:
         assert 0 <= key < 5
@@ -169,7 +174,9 @@ def test_get_root_node_starter() -> None:
 
 # TODO: Return and make better
 def test_heap_property_simple_starter() -> None:
-    """Test heap property in a basic way"""
+    """
+    Test heap property in a basic way
+    """
 
     for _ in range(50):  # Run this test a bunch to account for randomness
         t = TreapMap()
@@ -188,7 +195,9 @@ def test_heap_property_simple_starter() -> None:
 
 
 def test_bst_property_simple_starter() -> None:
-    """Test BST property in a basic way"""
+    """
+    Test BST property in a basic way
+    """
 
     for _ in range(50):  # Run this test a bunch to account for randomness
         t = TreapMap()
