@@ -3,6 +3,7 @@ import random
 import typing
 from collections.abc import Iterator
 from typing import List, Optional, cast
+import math
 
 from py_treaps.stack import Stack
 from py_treaps.treap import KT, VT, Treap
@@ -166,8 +167,6 @@ class TreapMap(Treap[KT, VT]):
                 victim = x
                 val = victim.value
                 break
-            else:
-                raise ValueError
 
         # victim is now the node to be removed
         # The child taking its place should have the largest priority
@@ -185,10 +184,7 @@ class TreapMap(Treap[KT, VT]):
                 self.left_rotate(victim)
 
         # Victim is now a leaf
-        if victim.is_left_child():
-            victim.parent.left_child = None
-        elif victim.is_right_child():
-            victim.parent.right_child = None
+        victim.remove()
 
         return val
 
@@ -265,18 +261,21 @@ class TreapMap(Treap[KT, VT]):
         """
         Ratio between the height and the minimum possible height.
         """
-        n = len(iter(self))
-        #
-        raise AttributeError
+        def height_helper(node: TreapNode, height: int = 0):
+            if node is None:
+                return
+            yield height
+            yield from height_helper(node.left_child, height+1)
+            yield from height_helper(node.right_child, height + 1)
+        heights = list(height_helper(self.root))
+        n = len(heights)
+        h = max(heights)
 
-    '''
-    defining these helpers as methods is cluttering.
-    def str_helper(self, node: TreapNode, level: int = 0, node_type: str = 'Root'):
-        if node is None:
-            return
-        yield node, level, node_type
-        yield from self.str_helper(node.left_child, level + 1, 'L')
-        yield from self.str_helper(node.right_child, level + 1, 'R')'''
+        hmin = math.floor(math.log(n, 2))  # minimum height is floor(logbase2(n))
+        if hmin == 0:
+            return 1
+        return h/hmin
+
 
     def __str__(self) -> str:
 
@@ -287,22 +286,12 @@ class TreapMap(Treap[KT, VT]):
             yield from helper(node.left_child, level + 1, 'L')
             yield from helper(node.right_child, level + 1, 'R')
 
-        #nodes = self.str_helper(self.root)
         nodes = helper(self.root)
         lines = []
-        for node, lvl, type in nodes:
-            lines.append('\t'*lvl + f'{type}: {(node.key, node.priority)}')
+        for node, lvl, node_type in nodes:
+            lines.append('\t'*lvl + f'{node_type}: {(node.key, node.priority)}')
 
         return '\n'.join(lines)
-
-    '''
-    def iter_helper(self, node):
-        if node is None:
-            return
-        yield from self.iter_helper(node.left_child)
-        yield node.key
-        yield from self.iter_helper(node.right_child)
-        '''
 
     def __iter__(self) -> typing.Iterator[KT]:
         def helper(node):
@@ -312,5 +301,4 @@ class TreapMap(Treap[KT, VT]):
             yield node.key
             yield from helper(node.right_child)
 
-        x = self.root
-        yield from helper(x)
+        yield from helper(self.root)

@@ -6,6 +6,7 @@ from typing import List, Optional, cast, Set
 
 from py_treaps.comparable import KT, VT
 
+
 class TreapNode:
 
     unused_priorities: Optional[List[int]] = None
@@ -87,3 +88,15 @@ class TreapNode:
 
     def has_children(self):
         return self.has_left_child() or self.has_right_child()
+
+    def remove(self):
+        """
+        Removes the node if it is a leaf.
+        """
+        if self.has_children():
+            raise ValueError("Cannot remove non-leaf node.")
+
+        if self.is_left_child():
+            self.parent.left_child = None
+        elif self.is_right_child():
+            self.parent.right_child = None
