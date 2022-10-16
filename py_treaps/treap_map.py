@@ -276,7 +276,6 @@ class TreapMap(Treap[KT, VT]):
             return 1
         return h/hmin
 
-
     def __str__(self) -> str:
 
         def helper(node: TreapNode, level: int = 0, node_type: str = 'Root'):
