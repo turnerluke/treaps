@@ -213,7 +213,6 @@ def test_bst_property_simple_starter() -> None:
                 stack.push(x.left_child)
 
 
-# TODO: See if priorities can match
 def test_join() -> None:
     t = TreapMap()
     t2 = TreapMap()

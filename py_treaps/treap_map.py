@@ -14,6 +14,9 @@ from py_treaps.treap_node import TreapNode
 class TreapMap(Treap[KT, VT]):
     # Add an __init__ if you want. Make the parameters optional, though.
     def __init__(self, root: TreapNode = None):
+        """
+        Initializes the TreapMap. If a root is passed, that root's parent will be cleaved.
+        """
         self.root = root
         self.num_nodes = 0
         if self.root is not None:
@@ -25,18 +28,6 @@ class TreapMap(Treap[KT, VT]):
 
     def get_num_elements(self):
         return self.num_nodes
-
-    # TODO: Delete these helper methods once comfortable.
-    '''
-    def lookup_helper(self, key: KT, node: TreapNode) -> Optional[VT]:
-        if node is None:
-            return None
-        if node.key == key:
-            return node.value
-        if key > node.key:
-            return self.lookup_helper(key, node.right_child)
-        if key < node.key:
-            return self.lookup_helper(key, node.left_child)'''
 
     def lookup(self, key: KT) -> Optional[VT]:
         """
@@ -246,18 +237,33 @@ class TreapMap(Treap[KT, VT]):
         # Delete x
         self.remove(0)
 
-    def meld(self, other: Treap[KT, VT]) -> None:
+    def meld(self, other: Treap[KT, VT]) -> None:  # TODO
         """
         Merges two Treaps. Does not assume any relationship between keys.
 
         Must run in O(m log(n/m)). n, m are the Treap sizes. (m<n)
         """
+
+        # Start at the root
+        # Try to insert like a node
+        # If you move right, check down the left child to see if also larger
+        #   If not, cleave and make a new tree to add
+        # Same with left
+
+        # Once a section has been added, rebalance
+        #   Will have to check each child of added subtree
+
         raise AttributeError
 
     def difference(self, other: Treap[KT, VT]) -> None: # KARMA
+        # Just parse through the other treap, removing each key
+        # Should run in O(m log(n/m)) time.
+
+        # 1) Parse through other, remove() each key
+        # 2) Parse through self, remove() each key in other
         raise AttributeError
 
-    def balance_factor(self) -> float:
+    def balance_factor(self) -> float: # TODO
         """
         Ratio between the height and the minimum possible height.
         """
@@ -277,6 +283,12 @@ class TreapMap(Treap[KT, VT]):
         return h/hmin
 
     def __str__(self) -> str:
+        """
+        Constructs a string representation of the current tree.
+        Used for debugging.
+        Represents each level with a greater tab than the past.
+        Shows the L & R child for each node, provided they have one.
+        """
 
         def helper(node: TreapNode, level: int = 0, node_type: str = 'Root'):
             if node is None:
@@ -293,6 +305,10 @@ class TreapMap(Treap[KT, VT]):
         return '\n'.join(lines)
 
     def __iter__(self) -> typing.Iterator[KT]:
+        """
+        Returns an iterator object of the trees keys.
+        Uses in-order traversal, ie keys are from low to high.
+        """
         def helper(node):
             if node is None:
                 return

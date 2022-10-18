@@ -18,4 +18,4 @@ Thus, the balance is 1 for a perfectly balanced tree and n/floor(log2(n)) for th
 
 ## Characterization
 In /experiments/balance_characterization.py the treaps are observed to have balances of 2.1 +/- 0.3.
-The balances are not exceptional, compared to options like BSTs or Red-Black trees which will have balances much closer to 1.
+The balances are not exceptional, compared to options like AVLs or Red-Black trees which will have balances much closer to 1.
