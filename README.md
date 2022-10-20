@@ -1,11 +1,13 @@
 # treaps-turnerluke
 treaps-turnerluke created by GitHub Classroom
 
-TODO:
+TODO:  
 
 -~~First draft~~  
--Test  
--Draft testcases  
--Karma  
+-~~Test~~  
+-~~Draft testcases~~  
+-~~Karma~~  
+-Finishing touches
+-Optimize karma further
 
 

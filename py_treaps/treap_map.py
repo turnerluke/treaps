@@ -115,7 +115,7 @@ class TreapMap(Treap[KT, VT]):
 
     def right_rotate(self, node):
         """
-        Helper for re-balancing. Performs a left rotation around node.
+        Helper for re-balancing. Performs a right rotation around node.
         """
         # Get relational nodes
         child = node.left_child
@@ -254,22 +254,23 @@ class TreapMap(Treap[KT, VT]):
 
         Must run in O(m log(n/m)). n, m are the Treap sizes. (m<n)
         """
+
         if len(other) > len(self):
             self, other = other, self
 
-        subtrees = [other]
+        subtrees = [other.root]
 
         while subtrees:
             subtree = subtrees.pop()
             # Start at the root
-            k = subtree.root.key
+            k = subtree.key
             # Try to insert like a node
             parent = self.find_parent(k)
 
             if parent.key < k:
                 # We are moving right
                 # If you move right, check down the left child to see if also larger
-                y = other.root.left_child
+                y = subtree.left_child
                 while y is not None:
                     if y.key < parent.key:
                         y.split()
@@ -278,10 +279,22 @@ class TreapMap(Treap[KT, VT]):
                     else:
                         y = y.left_child
 
+                if parent.parent is not None:
+                    z = subtree.right_child
+                    while z is not None:
+                        if z.key > parent.parent.key:
+                            z.split()
+                            subtrees.append(z)
+                            break
+                        else:
+                            z = z.right_child
+
+                parent.make_right_child(subtree)
+
             elif parent.key > k:
                 # We are moving left
                 # If you move left, check down the right child to see if also larger
-                y = other.root.right_child
+                y = subtree.right_child
                 while y is not None:
                     if y.key > parent.key:
                         y.split()
@@ -290,26 +303,115 @@ class TreapMap(Treap[KT, VT]):
                     else:
                         y = y.right_child
 
-            # We now have subtree to add to parent, which will obey BST
-            # Add then tend to the Heap property
+                if parent.parent is not None:
+                    z = subtree.left_child
+                    while z is not None:
+                        if z.key < parent.parent.key:
+                            z.split()
+                            subtrees.append(z)
+                            break
+                        else:
+                            z = z.right_child
 
+                parent.make_left_child(subtree)
 
-        #   If not, cleave and make a new tree to add
-        # Same with left
+            # Rebalance, BUT each time a section of the subtree is moved, check that subtree for imbalances
+            if subtree.priority > parent.priority:
+                self.rebalance_heap_rebalance_transplants(subtree)
 
-        # Once a section has been added, rebalance at the inserted node
-        #  If a child is cleaved and added to a branch of the original tree, check it and rebalance
-        #    Repeat
+    def left_rotate_rebalance_transplants(self, node):
+        """
+        Helper for re-balancing for meld. Performs a left rotation around node.
+        Checks each transplanted section of tree for imbalances.
+        """
+        # Get relational nodes
+        child = node.right_child
+        grandparent = node.parent
+        if grandparent is not None:
+            node_child_type = 'L' if node.is_left_child() else 'R'
 
-        raise AttributeError
+        node.right_child = child.left_child
+        node.correct_children()
+        child.left_child = node
+        node.parent = child
 
-    def difference(self, other: Treap[KT, VT]) -> None: # TODO
+        if grandparent is not None:
+            if node_child_type == 'L':
+                grandparent.left_child = child
+            elif node_child_type == 'R':
+                grandparent.right_child = child
+            child.parent = grandparent
+
+        elif grandparent is None:  # The child was rotated to the root
+            self.root = child
+            child.parent = None
+
+        # node.right_child may have a priority imbalance
+        if node.right_child is not None:
+            if node.right_child.priority > node.priority:
+                self.rebalance_heap_rebalance_transplants(node.right_child)
+
+    def right_rotate_rebalance_transplants(self, node):
+        """
+        Helper for re-balancing for meld. Performs a right rotation around node.
+        Checks each transplanted section of tree for imbalances.
+        """
+        # Get relational nodes
+        child = node.left_child
+        grandparent = node.parent
+        if grandparent is not None:
+            node_child_type = 'L' if node.is_left_child() else 'R'
+
+        node.left_child = child.right_child
+        node.correct_children()
+        child.right_child = node
+        node.parent = child
+
+        if grandparent is not None:
+            if node_child_type == 'L':
+                grandparent.left_child = child
+            elif node_child_type == 'R':
+                grandparent.right_child = child
+            child.parent = grandparent
+
+        elif grandparent is None:
+            self.root = child
+            child.parent = None
+
+        # node.left_child may have a priority imbalance
+        if node.left_child is not None:
+            if node.left_child.priority > node.priority:
+                self.rebalance_heap_rebalance_transplants(node.left_child)
+
+    def rebalance_heap_rebalance_transplants(self, child):
+        """
+        Rebalance function for the meld method. Works same as `rebalance_heap` except checks transplanted sections of
+        the new subtree for imbalances.
+        """
+        grandparent = child.parent.parent
+        if child.is_left_child():
+            self.right_rotate_rebalance_transplants(child.parent)
+        elif child.is_right_child():
+            self.left_rotate_rebalance_transplants(child.parent)
+
+        # Check for new imbalances (first child had too large priority, check if this is still the case
+        # btw child & it's new parent
+        if grandparent is not None:
+            if child.priority > grandparent.priority:
+                self.rebalance_heap_rebalance_transplants(child)
+
+    def difference(self, other: Treap[KT, VT]) -> None:
+        """
+        Removes keys contained in Treap 'other' from this treap
+        """
         # Just parse through the other treap, removing each key
         # Should run in O(m log(n/m)) time.
 
-        # 1) Parse through other, remove() each key
-        # 2) Parse through self, remove() each key in other
-        raise AttributeError
+        # Parse through other, remove() each key
+        # This runs in O(m log(n)) time:
+        # TODO: Optimize somehow
+        for key in other:
+            self.remove(key)
 
     def balance_factor(self) -> float:
         """

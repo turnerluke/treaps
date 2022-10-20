@@ -169,6 +169,26 @@ def test_get_root_node_starter() -> None:
     assert root_node.left_child is not None or root_node.right_child is not None
 
 
+def is_heap(t: TreapMap) -> bool:
+    """
+    Returns true if the TreapMap, t, obeys the heap property.
+    """
+    root = t.get_root_node()
+    stack = Stack()
+    stack.push(root)
+    while stack:
+        x = stack.pop()
+        if x.has_right_child():
+            if x.priority < x.right_child.priority:
+                return False
+            stack.push(x.right_child)
+        if x.has_left_child():
+            if x.priority < x.left_child.priority:
+                return False
+            stack.push(x.left_child)
+    return True
+
+
 def test_heap_property_simple_starter() -> None:
     """
     Test heap property in a basic way
@@ -178,17 +198,24 @@ def test_heap_property_simple_starter() -> None:
         t = TreapMap()
         for i in range(10):
             t.insert(str(i), str(i))
-        root = t.get_root_node()
-        stack = Stack()
-        stack.push(root)
-        while stack:
-            x = stack.pop()
-            if x.has_right_child():
-                assert x.priority >= x.right_child.priority
-                stack.push(x.right_child)
-            if x.has_left_child():
-                assert x.priority >= x.left_child.priority
-                stack.push(x.left_child)
+        assert is_heap(t), "TreapMap does not obey heap property."
+
+
+def is_bst(t: TreapMap) -> bool:
+    root = t.get_root_node()
+    stack = Stack()
+    stack.push(root)
+    while stack:
+        x = stack.pop()
+        if x.has_right_child():
+            if x.key > x.right_child.key:
+                return False
+            stack.push(x.right_child)
+        if x.has_left_child():
+            if x.key < x.left_child.key:
+                return False
+            stack.push(x.left_child)
+    return True
 
 
 def test_bst_property_simple_starter() -> None:
@@ -200,17 +227,7 @@ def test_bst_property_simple_starter() -> None:
         t = TreapMap()
         for i in range(10):
             t.insert(str(i), str(i))
-        root = t.get_root_node()
-        stack = Stack()
-        stack.push(root)
-        while stack:
-            x = stack.pop()
-            if x.has_right_child():
-                assert x.key <= x.right_child.key
-                stack.push(x.right_child)
-            if x.has_left_child():
-                assert x.key >= x.left_child.key
-                stack.push(x.left_child)
+        assert is_bst(t), "TreapMap did not obey BST property."
 
 
 def test_join() -> None:
@@ -243,3 +260,34 @@ def test_iterator_independence() -> None:
     next(it1)
     assert next(it1) != next(it2)
     assert next(it1) != next(it2)
+
+
+def test_meld() -> None:
+
+    for pairs in [(range(0, 21, 2), range(1, 22, 2)), (range(0, 21), range(21, 41)), (range(-20, 1), range(1, 21))]:
+        t = TreapMap()
+        for i in pairs[0]:
+            t.insert(i, i)
+        t2 = TreapMap()
+        for i in pairs[1]:
+            t2.insert(i, i)
+
+        t.meld(t2)
+
+        assert is_heap(t), "Doesn't obey heap property"
+        assert is_bst(t), "Doesn't obey BST property"
+
+
+def test_difference():
+
+    t = TreapMap()
+    for i in range(0, 100):
+        t.insert(i, i)
+    t2 = TreapMap()
+    for i in range(51, 100):
+        t2.insert(i, i)
+
+    t.difference(t2)
+
+    for i in range(0, 51):
+        assert i in t, "Difference did not function properly"
