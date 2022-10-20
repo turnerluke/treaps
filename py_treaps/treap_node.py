@@ -89,6 +89,14 @@ class TreapNode:
     def has_children(self):
         return self.has_left_child() or self.has_right_child()
 
+    def make_right_child(self, node: TreapNode) -> None:
+        self.right_child = node
+        node.parent = self
+
+    def make_left_child(self, node: TreapNode) -> None:
+        self.left_child = node
+        node.parent = self
+
     def remove(self):
         """
         Removes the node if it is a leaf.
@@ -100,3 +108,14 @@ class TreapNode:
             self.parent.left_child = None
         elif self.is_right_child():
             self.parent.right_child = None
+
+    def split(self):
+        """
+        Removes the node from its parent. Does not have to be a leaf.
+        """
+        if self.parent.left_child == self:
+            self.parent.left_child = None
+        elif self.parent.right_child == self:
+            self.parent.right_child = None
+
+        self.parent = None

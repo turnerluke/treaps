@@ -48,32 +48,43 @@ class TreapMap(Treap[KT, VT]):
 
         return helper(self.root)
 
+    def find_parent(self, key: KT) -> TreapNode:
+        """
+        Finds the parent where the next node with key, key, should be inserted.
+        """
+        x = self.root
+        # Perform the BST insertion
+        while True:
+            if x.key > key:
+                if x.left_child is None:
+                    return x
+                x = x.left_child
+            elif x.key < key:
+                if x.right_child is None:
+                    return x
+                x = x.right_child
+            elif x.key == key:
+                return x
+
     def insert(self, key: KT, value: VT) -> None:
         self.num_nodes += 1
         if self.root is None:
             self.root = TreapNode(key, value)
         else:
-            x = self.root
-            # Perform the BST insertion
-            while True:
-                if x.key > key:
-                    if x.left_child is None:
-                        new = TreapNode(key, value, x)
-                        x.left_child = new
-                        break
-                    x = x.left_child
-                elif x.key < key:
-                    if x.right_child is None:
-                        new = TreapNode(key, value, x)
-                        x.right_child = new
-                        break
-                    x = x.right_child
-                elif x.key == key:
-                    x.value = value
-                    return
+            parent = self.find_parent(key)
+
+            if parent.key > key:
+                new = TreapNode(key, value, parent)
+                parent.make_left_child(new)
+            elif parent.key < key:
+                new = TreapNode(key, value, parent)
+                parent.make_right_child(new)
+            elif parent.key == key:
+                parent.value = value
+                return
 
             # Rebalance maxheap
-            if new.priority > x.priority:  # The heap is imbalanced
+            if new.priority > parent.priority:  # The heap is imbalanced
                 self.rebalance_heap(new)
 
     def left_rotate(self, node):
@@ -243,19 +254,56 @@ class TreapMap(Treap[KT, VT]):
 
         Must run in O(m log(n/m)). n, m are the Treap sizes. (m<n)
         """
+        if len(other) > len(self):
+            self, other = other, self
 
-        # Start at the root
-        # Try to insert like a node
-        # If you move right, check down the left child to see if also larger
+        subtrees = [other]
+
+        while subtrees:
+            subtree = subtrees.pop()
+            # Start at the root
+            k = subtree.root.key
+            # Try to insert like a node
+            parent = self.find_parent(k)
+
+            if parent.key < k:
+                # We are moving right
+                # If you move right, check down the left child to see if also larger
+                y = other.root.left_child
+                while y is not None:
+                    if y.key < parent.key:
+                        y.split()
+                        subtrees.append(y)
+                        break
+                    else:
+                        y = y.left_child
+
+            elif parent.key > k:
+                # We are moving left
+                # If you move left, check down the right child to see if also larger
+                y = other.root.right_child
+                while y is not None:
+                    if y.key > parent.key:
+                        y.split()
+                        subtrees.append(y)
+                        break
+                    else:
+                        y = y.right_child
+
+            # We now have subtree to add to parent, which will obey BST
+            # Add then tend to the Heap property
+
+
         #   If not, cleave and make a new tree to add
         # Same with left
 
-        # Once a section has been added, rebalance
-        #   Will have to check each child of added subtree
+        # Once a section has been added, rebalance at the inserted node
+        #  If a child is cleaved and added to a branch of the original tree, check it and rebalance
+        #    Repeat
 
         raise AttributeError
 
-    def difference(self, other: Treap[KT, VT]) -> None: # KARMA
+    def difference(self, other: Treap[KT, VT]) -> None: # TODO
         # Just parse through the other treap, removing each key
         # Should run in O(m log(n/m)) time.
 
@@ -263,7 +311,7 @@ class TreapMap(Treap[KT, VT]):
         # 2) Parse through self, remove() each key in other
         raise AttributeError
 
-    def balance_factor(self) -> float: # TODO
+    def balance_factor(self) -> float:
         """
         Ratio between the height and the minimum possible height.
         """
@@ -317,3 +365,6 @@ class TreapMap(Treap[KT, VT]):
             yield from helper(node.right_child)
 
         yield from helper(self.root)
+
+    def __len__(self) -> int:
+        return len(list(iter(self)))
