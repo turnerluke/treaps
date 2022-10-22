@@ -50,7 +50,8 @@ class TreapMap(Treap[KT, VT]):
 
     def find_parent(self, key: KT) -> TreapNode:
         """
-        Finds the parent where the next node with key, key, should be inserted.
+        Finds the parent where the next node with key, `key`, should be inserted.
+        If key is in the Treap, returns the corresponding node.
         """
         x = self.root
         # Perform the BST insertion
@@ -156,19 +157,13 @@ class TreapMap(Treap[KT, VT]):
         """
         Removes the node with this key from the tree. Returns the value for that node. Returns None if not present.
         """
-        x = self.root
+        if self.get_root_node() is None:
+            return None
 
-        while True:
-            if x is None:
-                return None
-            if key > x.key:
-                x = x.right_child
-            elif key < x.key:
-                x = x.left_child
-            elif key == x.key:
-                victim = x
-                val = victim.value
-                break
+        victim = self.find_parent(key)  # Note, if key is in Treap `find_parent` returns that node
+        if victim.key != key:  # The key is not in the Treap
+            return None
+        val = victim.value
 
         # victim is now the node to be removed
         # The child taking its place should have the largest priority
@@ -190,6 +185,27 @@ class TreapMap(Treap[KT, VT]):
 
         return val
 
+    def insert(self, key: KT, value: VT) -> None:
+        self.num_nodes += 1
+        if self.root is None:
+            self.root = TreapNode(key, value)
+        else:
+            parent = self.find_parent(key)
+
+            if parent.key > key:
+                new = TreapNode(key, value, parent)
+                parent.make_left_child(new)
+            elif parent.key < key:
+                new = TreapNode(key, value, parent)
+                parent.make_right_child(new)
+            elif parent.key == key:
+                parent.value = value
+                return
+
+            # Rebalance maxheap
+            if new.priority > parent.priority:  # The heap is imbalanced
+                self.rebalance_heap(new)
+
     def insert_with_max_priority(self, key: KT) -> None:
         """
         Helper for `split`. Same function as insert, however sets the priority
@@ -199,21 +215,15 @@ class TreapMap(Treap[KT, VT]):
         if self.root is None:
             self.root = TreapNode(key, value)
         else:
-            x = self.root
-            # Perform the BST insertion
-            while True:
-                if x.key >= key:
-                    if x.left_child is None:
-                        new = TreapNode(key, value, x)
-                        x.left_child = new
-                        break
-                    x = x.left_child
-                elif x.key < key:
-                    if x.right_child is None:
-                        new = TreapNode(key, value, x)
-                        x.right_child = new
-                        break
-                    x = x.right_child
+            parent = self.find_parent(key)
+
+            if parent.key >= key:
+                new = TreapNode(key, value, parent)
+                parent.make_left_child(new)
+            elif parent.key < key:
+                new = TreapNode(key, value, parent)
+                parent.make_right_child(new)
+
             new.set_priority_to_max()
             self.rebalance_heap(new)
 
