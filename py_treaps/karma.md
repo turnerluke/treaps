@@ -1,7 +1,6 @@
+# Karma Examples
 
-
-
-
+The following document explains my design decisions on the karma examples.
 
 # Meld
 Melding two Treaps is similar to the process of inserting a node, however there are some key differences.

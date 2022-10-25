@@ -245,6 +245,42 @@ def test_join() -> None:
         assert t.lookup(i) == str(i)
 
 
+def test_empty_join_l() -> None:
+    t = TreapMap()
+    t2 = TreapMap()
+
+    for i in range(10):
+        t.insert(i, str(i))
+
+    t.join(t2)
+    for i in range(10):
+        assert i in t
+        assert t.lookup(i) == str(i)
+
+
+def test_empty_join_r() -> None:
+    t = TreapMap()
+    t2 = TreapMap()
+
+    for i in range(10):
+        t2.insert(i, str(i))
+
+    t.join(t2)
+    for i in range(10):
+        assert i in t
+        assert t.lookup(i) == str(i)
+
+
+def test_double_empty_join() -> None:
+    t = TreapMap()
+    t2 = TreapMap()
+
+    t.join(t2)
+    for i in range(-100, 101, 10):
+        assert i not in t
+    assert t.get_root_node() is None
+
+
 def test_iterator_independence() -> None:
     for _ in range(50):  # Run this test a bunch to account for randomness
         t = TreapMap()

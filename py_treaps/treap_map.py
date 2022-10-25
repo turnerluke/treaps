@@ -247,6 +247,11 @@ class TreapMap(Treap[KT, VT]):
         Note it's assumed that all keys in T1 are smaller than keys in T2.
 
         """
+        if _other.root is None:
+            return
+        if self.root is None:
+            self.root = _other.root
+            return
         # Create new TreapMap with arbitrary root, x
         T = TreapMap(TreapNode(0, None))
         # Make T1 & T2 the subtreaps
