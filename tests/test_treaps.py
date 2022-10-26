@@ -124,35 +124,19 @@ def test_iterator_exception_starter() -> None:
         next(it)
 
 
-def test_small_split_by_median_starter() -> None:
-    """
-    Test `split` with the median key.
-    """
-
-    original_treap = TreapMap()
-    for i in range(6):
-        original_treap.insert(i, str(i))
-    left, right = original_treap.split(3)
-
-    for key in left:
-        assert 0 <= key < 3
-    for i in range(3, 6):
-        assert right.lookup(i) == str(i)
-
-
 def test_split_by_median_starter() -> None:
     """
     Test `split` with the median key.
     """
 
     original_treap = TreapMap()
-    for i in range(11):
+    for i in range(21):
         original_treap.insert(i, str(i))
-    left, right = original_treap.split(5)
+    left, right = original_treap.split(10)
 
     for key in left:
-        assert 0 <= key < 5
-    for i in range(5, 11):
+        assert 0 <= key < 10
+    for i in range(10, 21):
         assert right.lookup(i) == str(i)
 
 
@@ -326,4 +310,4 @@ def test_difference():
     t.difference(t2)
 
     for i in range(0, 51):
-        assert i in t, "Difference did not function properly"
+        assert i in t, "`Difference` did not function properly"
