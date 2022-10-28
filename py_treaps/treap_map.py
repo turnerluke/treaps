@@ -26,7 +26,7 @@ class TreapMap(Treap[KT, VT]):
     def get_root_node(self) -> Optional[TreapNode]:
         return self.root
 
-    def get_num_elements(self):
+    def get_num_elements(self) -> int:
         return self.num_nodes
 
     def lookup(self, key: KT) -> Optional[VT]:
@@ -88,7 +88,7 @@ class TreapMap(Treap[KT, VT]):
             if new.priority > parent.priority:  # The heap is imbalanced
                 self.rebalance_heap(new)
 
-    def left_rotate(self, node):
+    def left_rotate(self, node: TreapNode) -> None:
         """
         Helper for re-balancing. Performs a left rotation around node.
         """
@@ -114,7 +114,7 @@ class TreapMap(Treap[KT, VT]):
             self.root = child
             child.parent = None
 
-    def right_rotate(self, node):
+    def right_rotate(self, node: TreapNode) -> None:
         """
         Helper for re-balancing. Performs a right rotation around node.
         """
@@ -140,7 +140,7 @@ class TreapMap(Treap[KT, VT]):
             self.root = child
             child.parent = None
 
-    def rebalance_heap(self, child):
+    def rebalance_heap(self, child: TreapNode) -> None:
         grandparent = child.parent.parent
         if child.is_left_child():
             self.right_rotate(child.parent)
@@ -263,7 +263,7 @@ class TreapMap(Treap[KT, VT]):
         # Delete x
         self.remove(0)
 
-    def meld(self, other: Treap[KT, VT]) -> None:  # TODO
+    def meld(self, other: Treap[KT, VT]) -> None:
         """
         Merges two Treaps. Does not assume any relationship between keys.
 
@@ -334,7 +334,7 @@ class TreapMap(Treap[KT, VT]):
             if subtree.priority > parent.priority:
                 self.rebalance_heap_rebalance_transplants(subtree)
 
-    def left_rotate_rebalance_transplants(self, node):
+    def left_rotate_rebalance_transplants(self, node: TreapNode) -> None:
         """
         Helper for re-balancing for meld. Performs a left rotation around node.
         Checks each transplanted section of tree for imbalances.
@@ -366,7 +366,7 @@ class TreapMap(Treap[KT, VT]):
             if node.right_child.priority > node.priority:
                 self.rebalance_heap_rebalance_transplants(node.right_child)
 
-    def right_rotate_rebalance_transplants(self, node):
+    def right_rotate_rebalance_transplants(self, node: TreapNode) -> None:
         """
         Helper for re-balancing for meld. Performs a right rotation around node.
         Checks each transplanted section of tree for imbalances.
@@ -398,7 +398,7 @@ class TreapMap(Treap[KT, VT]):
             if node.left_child.priority > node.priority:
                 self.rebalance_heap_rebalance_transplants(node.left_child)
 
-    def rebalance_heap_rebalance_transplants(self, child):
+    def rebalance_heap_rebalance_transplants(self, child: TreapNode) -> None:
         """
         Rebalance function for the meld method. Works same as `rebalance_heap` except checks transplanted sections of
         the new subtree for imbalances.
@@ -424,7 +424,7 @@ class TreapMap(Treap[KT, VT]):
 
         # Parse through other, remove() each key
         # This runs in O(m log(n)) time:
-        # TODO: Optimize somehow
+        # Optimize somehow
         for key in other:
             self.remove(key)
 
