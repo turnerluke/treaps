@@ -5,6 +5,7 @@ import pytest
 from typing import Any
 
 
+
 def test_empty_lookup_starter() -> None:
     """
     Test `lookup` on an empty Treap.
